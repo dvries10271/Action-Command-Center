@@ -34,6 +34,106 @@
             flex-direction: column;
         }
 
+        /* Login Screen */
+        #loginScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--bg-primary), #0f0f1e);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+
+        #loginScreen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .login-container {
+            background: var(--bg-secondary);
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--success-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .login-error {
+            background: rgba(249, 76, 102, 0.1);
+            border: 1px solid var(--error-red);
+            color: var(--error-red);
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        .login-footer {
+            margin-top: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .demo-info {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(74, 124, 158, 0.1);
+            border: 1px solid var(--accent-blue);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .demo-info strong {
+            color: var(--accent-blue);
+        }
+
+        /* Main App - Initially Hidden */
+        #mainApp {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        #mainApp.active {
+            display: flex;
+            flex-direction: column;
+        }
+
         /* Header */
         .header {
             background: var(--bg-secondary);
@@ -65,6 +165,29 @@
         .header-actions {
             display: flex;
             gap: 1rem;
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: color 0.2s;
+        }
+
+        .logout-btn:hover {
+            color: var(--error-red);
         }
 
         .btn {
@@ -165,12 +288,30 @@
             padding: 0 2rem;
         }
 
+        /* Mobile optimization for mission cards */
+        @media (max-width: 768px) {
+            .mission-content {
+                padding: 1rem;
+                display: flex;
+                flex-direction: column;
+                max-height: none; /* Remove height limit on mobile */
+                overflow: visible; /* Show all content */
+            }
+            
+            .mission-content.collapsed {
+                max-height: 0;
+                overflow: hidden;
+                padding: 0 1rem;
+            }
+        }
+
         .mission-card {
             background: var(--bg-card);
             border-radius: 8px;
             padding: 1rem;
             border: 1px solid var(--border-color);
             transition: transform 0.3s;
+            min-width: 250px; /* Ensure minimum width */
         }
 
         .mission-card:hover {
@@ -679,45 +820,141 @@
         /* Responsive */
         @media (max-width: 768px) {
             .header {
-                flex-direction: column;
-                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
                 text-align: center;
+                width: 100%;
+            }
+
+            .header-actions {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.5rem;
+                margin-top: 1rem;
+            }
+
+            .header-actions .btn {
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
             }
 
             .stats-bar {
                 flex-wrap: wrap;
                 justify-content: center;
+                padding: 0.5rem 1rem;
+            }
+
+            .stat-item {
+                min-width: 45%;
+                font-size: 0.85rem;
+            }
+
+            .mission-section {
+                padding: 0;
+            }
+
+            .mission-header {
+                padding: 0.75rem 1rem;
+            }
+
+            .mission-card {
+                width: 100%;
+                margin-bottom: 0.5rem;
             }
 
             .board {
                 flex-direction: column;
+                padding: 0.5rem;
             }
 
             .column {
                 min-width: 100%;
-            }
-
-            .mission-content {
-                grid-template-columns: 1fr;
+                margin-bottom: 1rem;
             }
 
             .form-row {
                 grid-template-columns: 1fr;
             }
+
+            .modal-content {
+                width: 95%;
+                margin: 1rem;
+                padding: 1.5rem 1rem;
+            }
+
+            /* Hide less important buttons on very small screens */
+            @media (max-width: 480px) {
+                .btn:nth-child(4) { /* Hide Stats button on very small screens */
+                    display: none;
+                }
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <h1>Action Command Center • <span id="userName">Guest</span></h1>
-        <div class="header-actions">
-            <button class="btn" onclick="openQuickCapture()">➕ Quick Capture (Ctrl+Space)</button>
-            <button class="btn btn-warning" onclick="extractFromStack()">📧 Extract from Stack</button>
-            <button class="btn btn-success" onclick="performWeeklyTriage()">📋 Weekly Triage</button>
-            <button class="btn" onclick="toggleStats()">📊 View Stats</button>
+    <!-- Login Screen -->
+    <div id="loginScreen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>Action Command Center</h1>
+                <p>Sign in to access your dashboard</p>
+            </div>
+            
+            <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
+                <div class="login-error" id="loginError"></div>
+                
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-success" id="loginButton">
+                    Sign In
+                </button>
+                
+                <div class="demo-info">
+                    <strong>Demo Mode:</strong> Use any email and password "demo" to explore<br>
+                    <strong>Production:</strong> Connect to your n8n webhook for real authentication
+                </div>
+            </form>
+            
+            <div class="login-footer">
+                Secure login powered by n8n workflows
+            </div>
         </div>
-    </header>
+    </div>
+
+    <!-- Main Application (Initially Hidden) -->
+    <div id="mainApp">
+        <!-- Header -->
+        <header class="header">
+            <h1>Action Command Center • <span id="userName">Guest</span></h1>
+            <div class="header-actions">
+                <button class="btn" onclick="openQuickCapture()">➕ Quick Capture (Ctrl+Space)</button>
+                <button class="btn btn-warning" onclick="extractFromStack()">📧 Extract from Stack</button>
+                <button class="btn btn-success" onclick="performWeeklyTriage()">📋 Weekly Triage</button>
+                <button class="btn" onclick="toggleStats()">📊 View Stats</button>
+                <div class="header-user">
+                    <span id="userEmail" style="font-size: 0.85rem; color: var(--text-secondary);">user@email.com</span>
+                    <button class="logout-btn" onclick="logout()" title="Logout">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
 
     <!-- Stats Bar -->
     <div class="stats-bar" id="statsBar">
@@ -857,8 +1094,20 @@
 
     <!-- Notification -->
     <div class="notification" id="notification"></div>
+    </div><!-- End Main App -->
 
     <script>
+        // Configuration
+        const CONFIG = {
+            API_ENDPOINT: '', // Set to 'https://your-n8n.app/webhook' when ready
+            DEMO_MODE: true, // Set to false when n8n is connected
+            TOKEN_KEY: 'auth_token',
+            USER_KEY: 'user_data'
+        };
+
+        // Authentication State
+        let authToken = null;
+        let currentUser = null;
         // Data structure
         let boardData = {
             todo: [],
@@ -981,49 +1230,200 @@
 
         // Initialize the board
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for existing session
+            checkAuthentication();
+        });
+
+        // Authentication Functions
+        function checkAuthentication() {
+            const savedToken = localStorage.getItem(CONFIG.TOKEN_KEY);
+            const savedUser = localStorage.getItem(CONFIG.USER_KEY);
+            
+            if (savedToken && savedUser) {
+                // Validate token
+                authToken = savedToken;
+                currentUser = JSON.parse(savedUser);
+                
+                if (CONFIG.DEMO_MODE) {
+                    // In demo mode, just show the app
+                    showMainApp();
+                } else {
+                    // In production, validate token with backend
+                    validateToken(savedToken);
+                }
+            } else {
+                // Show login screen
+                document.getElementById('loginScreen').classList.remove('hidden');
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const button = document.getElementById('loginButton');
+            const errorDiv = document.getElementById('loginError');
+            
+            // Clear previous errors
+            errorDiv.classList.remove('show');
+            button.disabled = true;
+            button.textContent = 'Signing in...';
+            
+            try {
+                if (CONFIG.DEMO_MODE) {
+                    // Demo mode - accept any email with password "demo"
+                    if (password === 'demo') {
+                        // Simulate successful login
+                        authToken = 'demo_token_' + Date.now();
+                        currentUser = {
+                            email: email,
+                            name: email.split('@')[0],
+                            id: 'demo_user_' + email
+                        };
+                        
+                        // Save to localStorage
+                        localStorage.setItem(CONFIG.TOKEN_KEY, authToken);
+                        localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(currentUser));
+                        
+                        // Show main app
+                        showMainApp();
+                    } else {
+                        throw new Error('In demo mode, use password "demo"');
+                    }
+                } else {
+                    // Production mode - authenticate with n8n
+                    const response = await fetch(`${CONFIG.API_ENDPOINT}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        authToken = data.token;
+                        currentUser = data.user;
+                        
+                        // Save to localStorage
+                        localStorage.setItem(CONFIG.TOKEN_KEY, authToken);
+                        localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(currentUser));
+                        
+                        // Show main app
+                        showMainApp();
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Invalid credentials');
+                    }
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.classList.add('show');
+                button.disabled = false;
+                button.textContent = 'Sign In';
+            }
+        }
+
+        async function validateToken(token) {
+            if (CONFIG.DEMO_MODE) {
+                showMainApp();
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${CONFIG.API_ENDPOINT}/auth/validate`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    showMainApp();
+                } else {
+                    // Token invalid, show login
+                    logout();
+                }
+            } catch (error) {
+                console.error('Token validation failed:', error);
+                logout();
+            }
+        }
+
+        function showMainApp() {
+            // Hide login screen
+            document.getElementById('loginScreen').classList.add('hidden');
+            
+            // Show main app
+            document.getElementById('mainApp').classList.add('active');
+            
+            // Update UI with user info
+            document.getElementById('userName').textContent = currentUser.name || currentUser.email.split('@')[0];
+            document.getElementById('userEmail').textContent = currentUser.email;
+            
+            // Initialize dashboard
+            initializeApp();
+        }
+
+        function logout() {
+            // Clear storage
+            localStorage.removeItem(CONFIG.TOKEN_KEY);
+            localStorage.removeItem(CONFIG.USER_KEY);
+            
+            // Clear state
+            authToken = null;
+            currentUser = null;
+            
+            // Reset UI
+            document.getElementById('mainApp').classList.remove('active');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            
+            // Clear form
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginError').classList.remove('show');
+        }
+
+        function getAuthHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            };
+        }
+
+        // Initialize app after login
+        function initializeApp() {
             // Load user data and missions
             loadUserData();
             initializeMissions();
             initializeBoard();
-            loadSampleData();
+            loadSampleData(); // In production, replace with loadUserCards()
             setupEventListeners();
             updateStats();
             
-            // Set up API endpoint listener
-            setupWebhookListener();
-        });
+            // Set up API endpoint listener if configured
+            if (CONFIG.API_ENDPOINT) {
+                setupWebhookListener();
+            }
+        }
 
         async function loadUserData() {
-            // Get user from URL params or localStorage
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('user') || localStorage.getItem('userId') || 'default';
+            // User data already loaded from login
+            window.currentUser = currentUser;
             
-            // For demo mode, just set the user name without API calls
-            document.getElementById('userName').textContent = userId === 'default' ? 'Guest' : userId;
-            
-            // Store for later use
-            window.currentUser = {
-                id: userId,
-                name: userId === 'default' ? 'Guest' : userId
-            };
-            
-            // In production, uncomment this to fetch from API:
-            /*
-            try {
-                const response = await fetch(`/api/user/${userId}`);
-                if (response.ok) {
-                    const userData = await response.json();
-                    document.getElementById('userName').textContent = userData.name || 'Guest';
-                    window.currentUser = userData;
+            // In production, fetch additional user data like missions
+            if (!CONFIG.DEMO_MODE && CONFIG.API_ENDPOINT) {
+                try {
+                    const response = await fetch(`${CONFIG.API_ENDPOINT}/user/missions`, {
+                        headers: getAuthHeaders()
+                    });
                     
-                    if (userData.missions) {
-                        loadMissionsFromAPI(userData.missions);
+                    if (response.ok) {
+                        const missions = await response.json();
+                        loadMissionsFromAPI(missions);
                     }
+                } catch (error) {
+                    console.log('Could not load missions:', error);
                 }
-            } catch (error) {
-                console.log('API not available, using demo mode');
             }
-            */
         }
 
         function loadMissionsFromAPI(missionsData) {
@@ -1672,18 +2072,126 @@
             }
         }
 
-        function extractFromStack() {
-            showNotification('Extracting actions from Stack Sessions...', 'success');
-            // Simulate extraction
-            setTimeout(() => {
-                showNotification('3 new actions extracted from Stack Sessions!', 'success');
-                document.getElementById('stackCount').textContent = '0 unprocessed';
-            }, 2000);
+        async function extractFromStack() {
+            if (CONFIG.DEMO_MODE) {
+                // Demo mode simulation
+                showNotification('Extracting actions from Stack Sessions...');
+                setTimeout(() => {
+                    showNotification('3 new actions extracted from Stack Sessions!');
+                    document.getElementById('stackCount').textContent = '0 unprocessed';
+                    
+                    // Add some demo cards
+                    const demoCard = {
+                        id: Date.now(),
+                        title: 'Demo action from Stack Session',
+                        domain: 'Business',
+                        effort: 2,
+                        score: 75,
+                        quadrant: 'uni',
+                        badges: ['Stack Session'],
+                        source: 'Stack Session',
+                        sourceDate: new Date().toISOString().split('T')[0]
+                    };
+                    addActionCard(demoCard, 'todo', demoCard.quadrant);
+                    updateColumnCounts();
+                }, 2000);
+                return;
+            }
+            
+            // Production mode
+            showNotification('Checking for new Stack Sessions...');
+            
+            try {
+                const response = await fetch(`${CONFIG.API_ENDPOINT}/stack/check-new`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.unprocessedSessions && data.unprocessedSessions.length > 0) {
+                        for (const session of data.unprocessedSessions) {
+                            const extractResponse = await fetch(`${CONFIG.API_ENDPOINT}/stack/extract`, {
+                                method: 'POST',
+                                headers: getAuthHeaders(),
+                                body: JSON.stringify({ sessionId: session.id })
+                            });
+                            
+                            if (extractResponse.ok) {
+                                const cards = await extractResponse.json();
+                                cards.forEach(card => addActionCard(card, 'todo', card.quadrant));
+                            }
+                        }
+                        
+                        showNotification(`${data.cardsCreated} actions extracted from ${data.unprocessedSessions.length} sessions!`);
+                        document.getElementById('stackCount').textContent = '0 unprocessed';
+                    } else {
+                        showNotification('No new Stack Sessions to process');
+                    }
+                }
+            } catch (error) {
+                showNotification('Could not connect to Stack Session processor', 'error');
+            }
         }
 
-        function performWeeklyTriage() {
-            showNotification('Starting weekly triage process...');
-            // This would trigger the triage workflow
+        async function performWeeklyTriage() {
+            if (!confirm('Start weekly triage? This will reorganize your cards based on capacity and priority.')) {
+                return;
+            }
+            
+            showNotification('Running weekly triage...');
+            
+            if (CONFIG.DEMO_MODE) {
+                // Demo mode simulation
+                setTimeout(() => {
+                    showNotification('Triage complete! Cards have been reorganized.');
+                    updateStats();
+                }, 2000);
+                return;
+            }
+            
+            // Production mode
+            try {
+                const response = await fetch(`${CONFIG.API_ENDPOINT}/triage/weekly`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        currentCapacity: getCurrentCapacity(),
+                        maxCapacity: 40,
+                        currentWeek: new Date().toISOString()
+                    })
+                });
+                
+                if (response.ok) {
+                    const triageResult = await response.json();
+                    
+                    // Clear and reload board
+                    clearBoard();
+                    
+                    // Add cards in new positions
+                    triageResult.todo?.forEach(card => addActionCard(card, 'todo', card.quadrant));
+                    triageResult.inAction?.forEach(card => addActionCard(card, 'inaction'));
+                    triageResult.signal?.forEach(card => addActionCard(card, 'signal', card.signalSection));
+                    triageResult.noise?.forEach(card => addActionCard(card, 'noise'));
+                    
+                    showNotification(`Triage complete! ${triageResult.moved} cards reorganized.`);
+                    updateStats();
+                }
+            } catch (error) {
+                showNotification('Could not complete triage', 'error');
+            }
+        }
+
+        function clearBoard() {
+            // Clear all cards from columns
+            document.querySelectorAll('.action-card').forEach(card => card.remove());
+            boardData = {
+                todo: [],
+                inaction: [],
+                signal: [],
+                noise: [],
+                completed: []
+            };
         }
 
         function toggleStats() {

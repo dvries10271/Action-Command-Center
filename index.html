@@ -1238,22 +1238,45 @@
         // Authentication Functions
         function checkAuthentication() {
             const savedToken = localStorage.getItem(CONFIG.TOKEN_KEY);
-            const savedUser = localStorage.getItem(CONFIG.USER_KEY);
+            const savedUserString = localStorage.getItem(CONFIG.USER_KEY);
             
-            if (savedToken && savedUser) {
-                // Validate token
-                authToken = savedToken;
-                currentUser = JSON.parse(savedUser);
-                
-                if (CONFIG.DEMO_MODE) {
-                    // In demo mode, just show the app
-                    showMainApp();
-                } else {
-                    // In production, validate token with backend
-                    validateToken(savedToken);
+            if (CONFIG.DEBUG) {
+                console.log('Checking authentication...');
+                console.log('Saved token:', savedToken);
+                console.log('Saved user string:', savedUserString);
+            }
+            
+            // Clean up any invalid data
+            if (savedUserString === 'undefined' || savedUserString === 'null') {
+                localStorage.removeItem(CONFIG.USER_KEY);
+                localStorage.removeItem(CONFIG.TOKEN_KEY);
+                document.getElementById('loginScreen').classList.remove('hidden');
+                return;
+            }
+            
+            if (savedToken && savedUserString) {
+                try {
+                    // Validate token and parse user data
+                    authToken = savedToken;
+                    currentUser = JSON.parse(savedUserString);
+                    
+                    if (CONFIG.DEMO_MODE) {
+                        // In demo mode, just show the app
+                        showMainApp();
+                    } else {
+                        // In production, validate token with backend
+                        validateToken(savedToken);
+                    }
+                } catch (error) {
+                    console.error('Error parsing saved user data:', error);
+                    // Clear corrupted data
+                    localStorage.removeItem(CONFIG.USER_KEY);
+                    localStorage.removeItem(CONFIG.TOKEN_KEY);
+                    // Show login screen
+                    document.getElementById('loginScreen').classList.remove('hidden');
                 }
             } else {
-                // Show login screen
+                // No saved session, show login screen
                 document.getElementById('loginScreen').classList.remove('hidden');
             }
         }
@@ -1398,6 +1421,13 @@
         }
 
         function showMainApp() {
+            // Ensure we have valid user data
+            if (!currentUser || !currentUser.email) {
+                console.error('Invalid user data, redirecting to login');
+                logout();
+                return;
+            }
+            
             // Hide login screen
             document.getElementById('loginScreen').classList.add('hidden');
             
@@ -1408,14 +1438,22 @@
             document.getElementById('userName').textContent = currentUser.name || currentUser.email.split('@')[0];
             document.getElementById('userEmail').textContent = currentUser.email;
             
+            if (CONFIG.DEBUG) {
+                console.log('User logged in:', currentUser);
+            }
+            
             // Initialize dashboard
             initializeApp();
         }
 
         function logout() {
-            // Clear storage
+            // Clear storage completely
             localStorage.removeItem(CONFIG.TOKEN_KEY);
             localStorage.removeItem(CONFIG.USER_KEY);
+            
+            // Also clear any other potential stored data
+            localStorage.removeItem('userId');
+            localStorage.removeItem('boardData');
             
             // Clear state
             authToken = null;
@@ -1429,6 +1467,10 @@
             document.getElementById('loginEmail').value = '';
             document.getElementById('loginPassword').value = '';
             document.getElementById('loginError').classList.remove('show');
+            
+            if (CONFIG.DEBUG) {
+                console.log('User logged out, localStorage cleared');
+            }
         }
 
         function getAuthHeaders() {

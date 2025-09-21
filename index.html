@@ -909,12 +909,12 @@
                 
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" required>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" autocomplete="username" required>
                 </div>
                 
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" required>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" required>
                 </div>
                 
                 <button type="submit" class="btn btn-success" id="loginButton">
@@ -1099,10 +1099,11 @@
     <script>
         // Configuration
         const CONFIG = {
-            API_ENDPOINT: 'https://n8n-production-3280.up.railway.app/webhook', // Set to 'https://your-n8n.app/webhook' when ready
-            DEMO_MODE: false, // Set to false when n8n is connected
+            API_ENDPOINT: 'https://n8n-production-3280.up.railway.app/webhook', // Your n8n endpoint
+            DEMO_MODE: false, // Set to false to use real authentication
             TOKEN_KEY: 'auth_token',
-            USER_KEY: 'user_data'
+            USER_KEY: 'user_data',
+            DEBUG: true // Enable debug logging
         };
 
         // Authentication State
@@ -1270,6 +1271,11 @@
             button.disabled = true;
             button.textContent = 'Signing in...';
             
+            if (CONFIG.DEBUG) {
+                console.log('Attempting login for:', email);
+                console.log('API Endpoint:', CONFIG.API_ENDPOINT);
+            }
+            
             try {
                 if (CONFIG.DEMO_MODE) {
                     // Demo mode - accept any email with password "demo"
@@ -1293,30 +1299,73 @@
                     }
                 } else {
                     // Production mode - authenticate with n8n
-                    const response = await fetch(`${CONFIG.API_ENDPOINT}/auth/login`, {
+                    const loginUrl = `${CONFIG.API_ENDPOINT}/auth/login`;
+                    
+                    if (CONFIG.DEBUG) {
+                        console.log('Sending login request to:', loginUrl);
+                    }
+                    
+                    const response = await fetch(loginUrl, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
                         body: JSON.stringify({ email, password })
                     });
                     
-                    if (response.ok) {
+                    if (CONFIG.DEBUG) {
+                        console.log('Response status:', response.status);
+                        console.log('Response headers:', response.headers);
+                    }
+                    
+                    // Check if response is JSON
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
                         const data = await response.json();
-                        authToken = data.token;
-                        currentUser = data.user;
                         
-                        // Save to localStorage
-                        localStorage.setItem(CONFIG.TOKEN_KEY, authToken);
-                        localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(currentUser));
+                        if (CONFIG.DEBUG) {
+                            console.log('Response data:', data);
+                        }
                         
-                        // Show main app
-                        showMainApp();
+                        if (response.ok && data.success) {
+                            authToken = data.token;
+                            currentUser = data.user;
+                            
+                            // Save to localStorage
+                            localStorage.setItem(CONFIG.TOKEN_KEY, authToken);
+                            localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(currentUser));
+                            
+                            // Show main app
+                            showMainApp();
+                        } else {
+                            throw new Error(data.message || data.error || 'Invalid credentials');
+                        }
                     } else {
-                        const error = await response.json();
-                        throw new Error(error.message || 'Invalid credentials');
+                        // Response is not JSON
+                        const text = await response.text();
+                        if (CONFIG.DEBUG) {
+                            console.error('Non-JSON response:', text);
+                        }
+                        throw new Error('Server returned invalid response. Check n8n workflow.');
                     }
                 }
             } catch (error) {
-                errorDiv.textContent = error.message;
+                console.error('Login error:', error);
+                
+                // Show user-friendly error message
+                let errorMessage = 'Login failed: ';
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage += 'Cannot connect to server. Check if n8n workflow is active.';
+                } else if (error.message.includes('NetworkError')) {
+                    errorMessage += 'Network error. Check your connection.';
+                } else if (error.message.includes('CORS')) {
+                    errorMessage += 'CORS error. Add Access-Control headers in n8n webhook.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                errorDiv.textContent = errorMessage;
                 errorDiv.classList.add('show');
                 button.disabled = false;
                 button.textContent = 'Sign In';

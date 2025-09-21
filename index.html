@@ -922,8 +922,10 @@
                 </button>
                 
                 <div class="demo-info">
-                    <strong>Demo Mode:</strong> Use any email and password "demo" to explore<br>
-                    <strong>Production:</strong> Connect to your n8n webhook for real authentication
+                    <strong>Login Successful!</strong> Your authentication is working.<br>
+                    <strong>Email:</strong> admin@example.com<br>
+                    <strong>Password:</strong> Use your configured password<br>
+                    <small>Note: Some features like missions may need additional n8n endpoints configured.</small>
                 </div>
             </form>
             
@@ -1503,16 +1505,29 @@
             // In production, fetch additional user data like missions
             if (!CONFIG.DEMO_MODE && CONFIG.API_ENDPOINT) {
                 try {
+                    // Try to load missions, but don't fail if unavailable
                     const response = await fetch(`${CONFIG.API_ENDPOINT}/user/missions`, {
+                        method: 'GET',
                         headers: getAuthHeaders()
                     });
                     
                     if (response.ok) {
                         const missions = await response.json();
                         loadMissionsFromAPI(missions);
+                        if (CONFIG.DEBUG) {
+                            console.log('Missions loaded:', missions);
+                        }
+                    } else {
+                        if (CONFIG.DEBUG) {
+                            console.log('Missions endpoint not available, using default missions');
+                        }
                     }
                 } catch (error) {
-                    console.log('Could not load missions:', error);
+                    // Don't fail the entire app if missions can't load
+                    if (CONFIG.DEBUG) {
+                        console.log('Could not load missions (this is OK):', error.message);
+                        console.log('Using default mission data instead');
+                    }
                 }
             }
         }

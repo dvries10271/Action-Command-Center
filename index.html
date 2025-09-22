@@ -1573,9 +1573,9 @@ function daysToQuarterEnd(qString) {
         const q4End = new Date('2025-12-31');
         
         if (now < q4Start) {
-            // Before Q4 starts - show countdown to start
+            // Before Q4 starts - return negative to indicate "starts in X days"
             const msPerDay = 24 * 60 * 60 * 1000;
-            return Math.ceil((q4Start - now) / msPerDay);
+            return -Math.ceil((q4Start - now) / msPerDay);
         } else if (now <= q4End) {
             // During Q4 - show days remaining
             const msPerDay = 24 * 60 * 60 * 1000;
@@ -1605,13 +1605,24 @@ function displayMissions(data) {
     /* --- quarter banner --- */
     const qBanner = document.getElementById('quarterInfo');
     if (qBanner) {
-        const quarterLabel = data.quarter || 'Current Quarter';
+        const quarterLabel = data.quarter || 'Q4 2025';
         const daysLeft = (typeof data.daysRemaining === 'number')
             ? data.daysRemaining
             : daysToQuarterEnd(quarterLabel);
 
-        qBanner.innerHTML =
-            `${quarterLabel} <span class="days">${daysLeft} days left</span>`;
+        let displayText = '';
+        if (daysLeft < 0) {
+            // Negative means quarter hasn't started yet
+            displayText = `${quarterLabel} <span class="days">starts in ${Math.abs(daysLeft)} days</span>`;
+        } else if (daysLeft > 0) {
+            // Positive means we're in the quarter
+            displayText = `${quarterLabel} <span class="days">${daysLeft} days left</span>`;
+        } else {
+            // Zero means quarter has ended
+            displayText = `${quarterLabel} <span class="days">ended</span>`;
+        }
+        
+        qBanner.innerHTML = displayText;
     }
 
     /* --- mission cards --- */

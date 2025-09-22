@@ -165,6 +165,7 @@
         .header-actions {
             display: flex;
             gap: 1rem;
+            align-items: center;
         }
 
         .header-user {
@@ -175,6 +176,79 @@
             background: var(--bg-card);
             border-radius: 6px;
             border: 1px solid var(--border-color);
+        }
+
+        .icon-btn {
+            background: var(--accent-blue);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            position: relative;
+            font-size: 1.2rem;
+        }
+
+        .icon-btn:hover {
+            background: #5a8cae;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 124, 158, 0.4);
+        }
+
+        .icon-btn.warning {
+            background: var(--warning-yellow);
+            color: #333;
+        }
+
+        .icon-btn.warning:hover {
+            background: #ffdc6c;
+        }
+
+        .icon-btn.success {
+            background: var(--success-green);
+        }
+
+        .icon-btn.success:hover {
+            background: #63cfad;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 4px solid rgba(0,0,0,0.9);
+        }
+
+        .icon-btn:hover .tooltip {
+            opacity: 1;
         }
 
         .logout-btn {
@@ -886,10 +960,15 @@
                 padding: 1.5rem 1rem;
             }
 
-            /* Hide less important buttons on very small screens */
-            @media (max-width: 480px) {
-                .btn:nth-child(4) { /* Hide Stats button on very small screens */
-                    display: none;
+            @media (max-width: 768px) {
+                .icon-btn {
+                    width: 36px;
+                    height: 36px;
+                    font-size: 1rem;
+                }
+                
+                .tooltip {
+                    display: none; /* Hide tooltips on mobile */
                 }
             }
         }
@@ -939,10 +1018,22 @@
         <header class="header">
             <h1>Action Command Center • <span id="userName">Guest</span></h1>
             <div class="header-actions">
-                <button class="btn" onclick="openQuickCapture()">➕ Quick Capture (Ctrl+Space)</button>
-                <button class="btn btn-warning" onclick="extractFromStack()">📧 Extract from Stack</button>
-                <button class="btn btn-success" onclick="performWeeklyTriage()">📋 Weekly Triage</button>
-                <button class="btn" onclick="toggleStats()">📊 View Stats</button>
+                <button class="icon-btn" onclick="openQuickCapture()" title="Quick Capture (Ctrl+Space)">
+                    ➕
+                    <span class="tooltip">Quick Capture (Ctrl+Space)</span>
+                </button>
+                <button class="icon-btn warning" onclick="extractFromStack()" title="Extract from Stack">
+                    📧
+                    <span class="tooltip">Extract from Stack</span>
+                </button>
+                <button class="icon-btn success" onclick="performWeeklyTriage()" title="Weekly Triage">
+                    📋
+                    <span class="tooltip">Weekly Triage</span>
+                </button>
+                <button class="icon-btn" onclick="toggleStats()" title="View Stats">
+                    📊
+                    <span class="tooltip">View Stats</span>
+                </button>
                 <div class="header-user">
                     <span id="userEmail" style="font-size: 0.85rem; color: var(--text-secondary);">user@email.com</span>
                     <button class="logout-btn" onclick="logout()" title="Logout">

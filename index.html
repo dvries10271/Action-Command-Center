@@ -1606,9 +1606,7 @@ function displayMissions(data) {
     const qBanner = document.getElementById('quarterInfo');
     if (qBanner) {
         const quarterLabel = data.quarter || 'Q4 2025';
-        const daysLeft = (typeof data.daysRemaining === 'number')
-            ? data.daysRemaining
-            : daysToQuarterEnd(quarterLabel);
+        const daysLeft = daysToQuarterEnd(quarterLabel);
 
         let displayText = '';
         if (daysLeft < 0) {

@@ -362,6 +362,18 @@
             padding: 0 2rem;
         }
 
+        /* put this just before the first @media block */
+.quarter-info{
+    margin-left:auto;
+    font-weight:600;
+    color:var(--accent-blue);
+}
+.quarter-info .days{
+    margin-left:.5rem;
+    font-weight:400;
+    color:var(--warning-yellow);
+}
+
         /* Mobile optimization for mission cards */
         @media (max-width: 768px) {
             .mission-content {
@@ -966,18 +978,6 @@
                 margin: 1rem;
                 padding: 1.5rem 1rem;
             }
-
-            /* NEW styles for the quarter banner */
-.quarter-info{
-    margin-left:auto;            /* push it to the far right */
-    font-weight:600;
-    color:var(--accent-blue);
-}
-.quarter-info .days{
-    margin-left:.5rem;
-    font-weight:400;
-    color:var(--warning-yellow);
-}
 
             @media (max-width: 768px) {
                 .icon-btn {

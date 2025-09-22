@@ -988,12 +988,12 @@
                 
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" autocomplete="username" required>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" value="admin@example.com" autocomplete="username" required>
                 </div>
                 
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" required>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" value="demo123" autocomplete="current-password" required>
                 </div>
                 
                 <button type="submit" class="btn btn-success" id="loginButton">
@@ -1001,8 +1001,8 @@
                 </button>
                 
                 <div class="demo-info">
-                    <strong>Demo Mode:</strong> Use any email and password "demo" to explore<br>
-                    <strong>Production:</strong> Connect to your n8n webhook for real authentication
+                    <strong>Production Mode Active:</strong> Connected to n8n<br>
+                    <strong>Test Account:</strong> admin@example.com / demo123
                 </div>
             </form>
             
@@ -1051,23 +1051,23 @@
     <div class="stats-bar" id="statsBar">
         <div class="stat-item">
             <span class="stat-label">Weekly Capacity:</span>
-            <span class="stat-value" id="weeklyCapacity">28/40 hrs</span>
+            <span class="stat-value" id="weeklyCapacity">0/40 hrs</span>
         </div>
         <div class="stat-item">
             <span class="stat-label">Today's Focus:</span>
-            <span class="stat-value" id="todayFocus">2/3 items</span>
+            <span class="stat-value" id="todayFocus">0/3 items</span>
         </div>
         <div class="stat-item">
             <span class="stat-label">Q4 Alignment:</span>
-            <span class="stat-value" id="q4Alignment">78%</span>
+            <span class="stat-value" id="q4Alignment">0%</span>
         </div>
         <div class="stat-item">
             <span class="stat-label">Completion Rate:</span>
-            <span class="stat-value" id="completionRate">85%</span>
+            <span class="stat-value" id="completionRate">0%</span>
         </div>
         <div class="stat-item">
             <span class="stat-label">Stack Sessions:</span>
-            <span class="stat-value" id="stackCount">3 unprocessed</span>
+            <span class="stat-value" id="stackCount">0 unprocessed</span>
         </div>
     </div>
 
@@ -1194,12 +1194,13 @@
             DEMO_MODE: false, // Set to false to use real authentication
             TOKEN_KEY: 'auth_token',
             USER_KEY: 'user_data',
-            DEBUG: true // Enable debug logging
+            DEBUG: false // Set to false for production
         };
 
         // Authentication State
         let authToken = null;
         let currentUser = null;
+        
         // Data structure
         let boardData = {
             todo: [],
@@ -1212,7 +1213,7 @@
         let currentEditingCard = null;
         let actionIdCounter = 100;
 
-        // Mission data
+        // Mission data (will be replaced with API data)
         const missionData = {
             body: {
                 title: "💪 Body Missions",
@@ -1256,73 +1257,8 @@
             }
         };
 
-        // Sample Stack Session extracted actions
-        const stackSessionActions = [
-            {
-                id: 1,
-                title: "Review Q1 financial reports and identify cost savings",
-                description: "From morning stack: Need to deep dive into Q1 numbers before board meeting",
-                domain: "Business",
-                effort: 3,
-                score: 85,
-                quadrant: "ui",
-                q4Alignment: 90,
-                badges: ["Q4", "Important"],
-                source: "Stack Session",
-                sourceDate: "2024-01-15",
-                revelation: "Cash flow optimization is critical for Q2 expansion",
-                deadline: "2024-02-01"
-            },
-            {
-                id: 2,
-                title: "Schedule follow-up with Dr. Martinez about shoulder",
-                description: "Pain increasing during workouts - need professional assessment",
-                domain: "Body",
-                effort: 0.5,
-                score: 70,
-                quadrant: "uni",
-                q4Alignment: 60,
-                badges: ["Health"],
-                source: "Stack Session",
-                sourceDate: "2024-01-14",
-                revelation: "Ignoring body signals leads to bigger problems",
-                deadline: null
-            },
-            {
-                id: 3,
-                title: "Prep board presentation on new product strategy",
-                description: "Include market analysis, competitive positioning, 3-year roadmap",
-                domain: "Business",
-                effort: 6,
-                score: 95,
-                quadrant: "ui",
-                q4Alignment: 100,
-                badges: ["Q4", "Urgent", "High Impact"],
-                source: "Stack Session",
-                sourceDate: "2024-01-15",
-                revelation: "This presentation will determine next 18 months of company direction",
-                deadline: "2024-01-25"
-            },
-            {
-                id: 4,
-                title: "Daily prayer and scripture study routine",
-                description: "Commit to 30min morning routine before family wakes",
-                domain: "Being",
-                effort: 0.5,
-                score: 75,
-                quadrant: "uni",
-                q4Alignment: 85,
-                badges: ["Daily", "Spiritual"],
-                source: "Stack Session",
-                sourceDate: "2024-01-13",
-                revelation: "Spiritual foundation affects all other domains",
-                deadline: null
-            }
-        ];
-
         // Initialize the board
         document.addEventListener('DOMContentLoaded', function() {
-            // Check for existing session
             checkAuthentication();
         });
 
@@ -1347,27 +1283,16 @@
             
             if (savedToken && savedUserString) {
                 try {
-                    // Validate token and parse user data
                     authToken = savedToken;
                     currentUser = JSON.parse(savedUserString);
-                    
-                    if (CONFIG.DEMO_MODE) {
-                        // In demo mode, just show the app
-                        showMainApp();
-                    } else {
-                        // In production, validate token with backend
-                        validateToken(savedToken);
-                    }
+                    showMainApp();
                 } catch (error) {
                     console.error('Error parsing saved user data:', error);
-                    // Clear corrupted data
                     localStorage.removeItem(CONFIG.USER_KEY);
                     localStorage.removeItem(CONFIG.TOKEN_KEY);
-                    // Show login screen
                     document.getElementById('loginScreen').classList.remove('hidden');
                 }
             } else {
-                // No saved session, show login screen
                 document.getElementById('loginScreen').classList.remove('hidden');
             }
         }
@@ -1380,101 +1305,47 @@
             const button = document.getElementById('loginButton');
             const errorDiv = document.getElementById('loginError');
             
-            // Clear previous errors
             errorDiv.classList.remove('show');
             button.disabled = true;
             button.textContent = 'Signing in...';
             
-            if (CONFIG.DEBUG) {
-                console.log('Attempting login for:', email);
-                console.log('API Endpoint:', CONFIG.API_ENDPOINT);
-            }
-            
             try {
-                if (CONFIG.DEMO_MODE) {
-                    // Demo mode - accept any email with password "demo"
-                    if (password === 'demo') {
-                        // Simulate successful login
-                        authToken = 'demo_token_' + Date.now();
-                        currentUser = {
-                            email: email,
-                            name: email.split('@')[0],
-                            id: 'demo_user_' + email
-                        };
+                const loginUrl = `${CONFIG.API_ENDPOINT}/auth/login`;
+                
+                const response = await fetch(loginUrl, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                        authToken = data.token;
+                        currentUser = data.user;
                         
-                        // Save to localStorage
                         localStorage.setItem(CONFIG.TOKEN_KEY, authToken);
                         localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(currentUser));
                         
-                        // Show main app
                         showMainApp();
                     } else {
-                        throw new Error('In demo mode, use password "demo"');
+                        throw new Error(data.message || data.error || 'Invalid credentials');
                     }
                 } else {
-                    // Production mode - authenticate with n8n
-                    const loginUrl = `${CONFIG.API_ENDPOINT}/auth/login`;
-                    
-                    if (CONFIG.DEBUG) {
-                        console.log('Sending login request to:', loginUrl);
-                    }
-                    
-                    const response = await fetch(loginUrl, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ email, password })
-                    });
-                    
-                    if (CONFIG.DEBUG) {
-                        console.log('Response status:', response.status);
-                        console.log('Response headers:', response.headers);
-                    }
-                    
-                    // Check if response is JSON
-                    const contentType = response.headers.get("content-type");
-                    if (contentType && contentType.indexOf("application/json") !== -1) {
-                        const data = await response.json();
-                        
-                        if (CONFIG.DEBUG) {
-                            console.log('Response data:', data);
-                        }
-                        
-                        if (response.ok && data.success) {
-                            authToken = data.token;
-                            currentUser = data.user;
-                            
-                            // Save to localStorage
-                            localStorage.setItem(CONFIG.TOKEN_KEY, authToken);
-                            localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(currentUser));
-                            
-                            // Show main app
-                            showMainApp();
-                        } else {
-                            throw new Error(data.message || data.error || 'Invalid credentials');
-                        }
-                    } else {
-                        // Response is not JSON
-                        const text = await response.text();
-                        if (CONFIG.DEBUG) {
-                            console.error('Non-JSON response:', text);
-                        }
-                        throw new Error('Server returned invalid response. Check n8n workflow.');
-                    }
+                    const text = await response.text();
+                    throw new Error('Server returned invalid response. Check n8n workflow.');
                 }
             } catch (error) {
                 console.error('Login error:', error);
                 
-                // Show user-friendly error message
                 let errorMessage = 'Login failed: ';
                 if (error.message.includes('Failed to fetch')) {
                     errorMessage += 'Cannot connect to server. Check if n8n workflow is active.';
-                } else if (error.message.includes('NetworkError')) {
-                    errorMessage += 'Network error. Check your connection.';
-                } else if (error.message.includes('CORS')) {
-                    errorMessage += 'CORS error. Add Access-Control headers in n8n webhook.';
                 } else {
                     errorMessage += error.message;
                 }
@@ -1486,220 +1357,167 @@
             }
         }
 
-        async function validateToken(token) {
-            if (CONFIG.DEMO_MODE) {
-                showMainApp();
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${CONFIG.API_ENDPOINT}/auth/validate`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                if (response.ok) {
-                    showMainApp();
-                } else {
-                    // Token invalid, show login
-                    logout();
-                }
-            } catch (error) {
-                console.error('Token validation failed:', error);
-                logout();
-            }
-        }
-
         function showMainApp() {
-            // Ensure we have valid user data
             if (!currentUser || !currentUser.email) {
                 console.error('Invalid user data, redirecting to login');
                 logout();
                 return;
             }
             
-            // Hide login screen
             document.getElementById('loginScreen').classList.add('hidden');
-            
-            // Show main app
             document.getElementById('mainApp').classList.add('active');
             
-            // Update UI with user info
             document.getElementById('userName').textContent = currentUser.name || currentUser.email.split('@')[0];
             document.getElementById('userEmail').textContent = currentUser.email;
             
-            if (CONFIG.DEBUG) {
-                console.log('User logged in:', currentUser);
-            }
-            
-            // Initialize dashboard
             initializeApp();
         }
 
         function logout() {
-            // Clear storage completely
             localStorage.removeItem(CONFIG.TOKEN_KEY);
             localStorage.removeItem(CONFIG.USER_KEY);
             
-            // Also clear any other potential stored data
-            localStorage.removeItem('userId');
-            localStorage.removeItem('boardData');
-            
-            // Clear state
             authToken = null;
             currentUser = null;
             
-            // Reset UI
             document.getElementById('mainApp').classList.remove('active');
             document.getElementById('loginScreen').classList.remove('hidden');
             
-            // Clear form
             document.getElementById('loginEmail').value = '';
             document.getElementById('loginPassword').value = '';
             document.getElementById('loginError').classList.remove('show');
-            
-            if (CONFIG.DEBUG) {
-                console.log('User logged out, localStorage cleared');
-            }
         }
 
         function getAuthHeaders() {
             return {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             };
         }
 
-        // Initialize app after login
-        function initializeApp() {
-            // Load user data and missions
-            loadUserData();
-            initializeMissions();
-            initializeBoard();
-            loadSampleData(); // In production, replace with loadUserCards()
-            setupEventListeners();
-            updateStats();
-            
-            // Set up API endpoint listener if configured
-            if (CONFIG.API_ENDPOINT) {
-                setupWebhookListener();
-            }
-        }
-
-        async function loadUserData() {
-            // User data already loaded from login
-            window.currentUser = currentUser;
-            
-            // In production, fetch additional user data like missions
-            if (!CONFIG.DEMO_MODE && CONFIG.API_ENDPOINT) {
-                try {
-                    const response = await fetch(`${CONFIG.API_ENDPOINT}/user/missions`, {
-                        headers: getAuthHeaders()
-                    });
-                    
-                    if (response.ok) {
-                        const missions = await response.json();
-                        loadMissionsFromAPI(missions);
-                    }
-                } catch (error) {
-                    console.log('Could not load missions:', error);
-                }
-            }
-        }
-
-        function loadMissionsFromAPI(missionsData) {
-            // Override missionData with actual user missions from Airtable
-            if (missionsData) {
-                Object.keys(missionsData).forEach(domain => {
-                    if (missionData[domain] && missionsData[domain]) {
-                        missionData[domain] = missionsData[domain];
-                    }
+        // UPDATED: Load real user cards from API
+        async function loadUserCards() {
+            try {
+                const response = await fetch(`${CONFIG.API_ENDPOINT}/cards/all`, {
+                    headers: getAuthHeaders()
                 });
                 
-                // Re-render missions with new data
-                initializeMissions();
-            }
-        }
-
-        function setupWebhookListener() {
-            // Listen for incoming webhook data
-            window.addEventListener('message', handleWebhookMessage);
-            
-            // Don't poll if running locally or in demo mode
-            // Uncomment this when you have the n8n endpoint ready:
-            /*
-            if (window.location.hostname !== 'localhost' && window.location.protocol !== 'file:') {
-                pollForUpdates();
-            }
-            */
-        }
-
-        async function handleWebhookMessage(event) {
-            // Verify origin for security
-            const trustedOrigins = [
-                'https://n8n-production.railway.app',
-                'http://localhost:5678'
-            ];
-            
-            if (!trustedOrigins.includes(event.origin)) return;
-            
-            const data = event.data;
-            
-            switch(data.action) {
-                case 'add_cards':
-                    handleIncomingCards(data.cards);
-                    break;
-                case 'update_missions':
-                    loadMissionsFromAPI(data.missions);
-                    break;
-                case 'sync_state':
-                    syncBoardState(data.state);
-                    break;
-            }
-        }
-
-        function handleIncomingCards(cards) {
-            cards.forEach(card => {
-                // Add unique ID if not present
-                if (!card.id) card.id = Date.now() + Math.random();
-                
-                // Add to TO-DO in appropriate quadrant
-                boardData.todo.push(card);
-                addActionCard(card, 'todo', card.quadrant || 'uni');
-            });
-            
-            updateColumnCounts();
-            showNotification(`${cards.length} new actions added from Stack Session!`);
-        }
-
-        async function pollForUpdates() {
-            // Only poll if we have a valid endpoint
-            if (!window.DASHBOARD_API_ENDPOINT) {
-                console.log('No API endpoint configured, skipping polling');
-                return;
-            }
-            
-            const userId = window.currentUser?.id || 'default';
-            
-            setInterval(async () => {
-                try {
-                    const response = await fetch(`${window.DASHBOARD_API_ENDPOINT}/dashboard-poll?user=${userId}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.hasUpdates) {
-                            handleIncomingCards(data.cards);
-                        }
-                    }
-                } catch (error) {
-                    // Silently fail - this is expected in demo mode
-                    console.debug('Polling skipped:', error.message);
+                if (!response.ok) {
+                    throw new Error('Failed to load cards');
                 }
-            }, 30000); // Poll every 30 seconds
+                
+                const data = await response.json();
+                
+                // Clear existing cards
+                document.querySelectorAll('.action-card').forEach(card => card.remove());
+                
+                // Add cards to appropriate columns
+                data.cards.forEach(card => {
+                    addActionCard(card, card.column, card.quadrant);
+                });
+                
+                updateStats();
+                console.log(`Loaded ${data.cards.length} cards`);
+            } catch (error) {
+                console.error('Error loading cards:', error);
+                showNotification('Failed to load cards', 'error');
+            }
         }
-        
-        // Configuration - set this when deploying with n8n
-        window.DASHBOARD_API_ENDPOINT = ''; // Set to 'https://n8n-production.railway.app/webhook' when ready
+
+        // UPDATED: Save Quick Capture to API
+        async function saveQuickCapture() {
+            const cardData = {
+                title: document.getElementById('actionTitle').value,
+                description: document.getElementById('actionDescription').value,
+                domain: document.getElementById('domainSelect').value,
+                quadrant: document.getElementById('quadrantSelect').value,
+                effort: parseFloat(document.getElementById('effortHours').value) || 1,
+                impact: parseInt(document.getElementById('impactScore').value) || 5,
+                q4Alignment: parseInt(document.getElementById('q4Score').value) || 50,
+                deadline: document.getElementById('deadline').value || null,
+                tags: getSelectedTags()
+            };
+            
+            try {
+                const response = await fetch(`${CONFIG.API_ENDPOINT}/cards/add`, {
+                    method: 'POST',
+                    headers: {
+                        ...getAuthHeaders(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(cardData)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    addActionCard(result.card, 'todo', result.card.quadrant);
+                    closeEditModal();
+                    showNotification('Card added successfully!');
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('Error saving card:', error);
+                showNotification('Failed to save card', 'error');
+            }
+        }
+
+        // UPDATED: Sync card movement with API
+        async function syncCardMove(cardId, newColumn, newQuadrant) {
+            try {
+                await fetch(`${CONFIG.API_ENDPOINT}/cards/move`, {
+                    method: 'POST',
+                    headers: {
+                        ...getAuthHeaders(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cardId: cardId,
+                        newColumn: newColumn,
+                        newQuadrant: newQuadrant
+                    })
+                });
+            } catch (error) {
+                console.error('Error syncing card move:', error);
+            }
+        }
+
+        // UPDATED: Delete card via API
+        async function deleteCard(cardId) {
+            try {
+                const response = await fetch(`${CONFIG.API_ENDPOINT}/cards/delete`, {
+                    method: 'POST',
+                    headers: {
+                        ...getAuthHeaders(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cardId: cardId })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error deleting card:', error);
+                return false;
+            }
+        }
+
+        // Initialize app after login
+        function initializeApp() {
+            initializeMissions();
+            initializeBoard();
+            loadUserCards(); // Load real cards instead of sample data
+            setupEventListeners();
+            updateStats();
+        }
+
+        function getSelectedTags() {
+            const tags = [];
+            document.querySelectorAll('.tag-btn.active').forEach(btn => {
+                tags.push(btn.textContent);
+            });
+            return tags;
+        }
 
         function initializeMissions() {
             const container = document.getElementById('missionContent');
@@ -1775,8 +1593,8 @@
                 <div class="capacity-container">
                     <div class="capacity-label">Weekly Capacity</div>
                     <div class="capacity-bar">
-                        <div class="capacity-fill safe" id="capacityFill" style="width: 70%">
-                            <span class="capacity-text">28/40 hrs</span>
+                        <div class="capacity-fill safe" id="capacityFill" style="width: 0%">
+                            <span class="capacity-text">0/40 hrs</span>
                         </div>
                     </div>
                 </div>
@@ -1799,10 +1617,7 @@
             `;
             board.appendChild(signalColumn);
 
-            // NOISE Column
             board.appendChild(createColumn('NOISE', 'noise'));
-
-            // COMPLETED Column
             board.appendChild(createColumn('COMPLETED', 'completed'));
         }
 
@@ -1820,24 +1635,6 @@
             return column;
         }
 
-        function loadSampleData() {
-            // Load Stack Session extracted actions
-            stackSessionActions.forEach((action, index) => {
-                if (index < 2) {
-                    boardData.todo.push(action);
-                    addActionCard(action, 'todo', action.quadrant);
-                } else if (index === 2) {
-                    boardData.inaction.push(action);
-                    addActionCard(action, 'inaction');
-                } else {
-                    boardData.signal.push(action);
-                    addActionCard(action, 'signal', 'signal-today');
-                }
-            });
-
-            updateColumnCounts();
-        }
-
         function addActionCard(action, column, zone = null) {
             const card = document.createElement('div');
             card.className = 'action-card';
@@ -1846,26 +1643,24 @@
             card.dataset.column = column;
             card.dataset.action = JSON.stringify(action);
             
-            if (action.score >= 90) {
+            if (action.impact >= 90) {
                 card.classList.add('high-impact');
             }
 
             let badgesHtml = '';
-            if (action.badges) {
-                action.badges.forEach(badge => {
+            if (action.tags && action.tags.length > 0) {
+                action.tags.forEach(tag => {
                     let badgeClass = 'badge';
-                    if (badge === 'Q4') badgeClass += ' badge-q4';
-                    if (badge === 'Urgent') badgeClass += ' badge-warning';
-                    if (badge === 'Delegated') badgeClass += ' badge-delegated';
-                    if (badge === 'High Impact') badgeClass += ' badge-warning';
-                    badgesHtml += `<span class="${badgeClass}">${badge}</span>`;
+                    if (tag === 'Q4' || tag === 'Q4 Goal') badgeClass += ' badge-q4';
+                    if (tag === 'Urgent') badgeClass += ' badge-warning';
+                    if (tag === 'Delegatable' || tag === 'Delegated') badgeClass += ' badge-delegated';
+                    if (tag === 'High Impact') badgeClass += ' badge-warning';
+                    badgesHtml += `<span class="${badgeClass}">${tag}</span>`;
                 });
             }
 
-            // Add domain badge
             badgesHtml += `<span class="badge badge-domain">${action.domain}</span>`;
 
-            // Add deadline if exists
             const deadlineText = action.deadline ? 
                 `📅 ${new Date(action.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : '';
 
@@ -1873,17 +1668,17 @@
                 <div class="card-header">
                     <div class="card-title">${action.title}</div>
                     <div class="card-actions">
-                        <button class="card-btn" onclick="editAction(${action.id})">✏️</button>
-                        <button class="card-btn" onclick="quickDelete(${action.id})">🗑️</button>
+                        <button class="card-btn" onclick="editAction('${action.id}')">✏️</button>
+                        <button class="card-btn" onclick="quickDelete('${action.id}')">🗑️</button>
                     </div>
                 </div>
                 ${badgesHtml ? `<div class="card-badges">${badgesHtml}</div>` : ''}
                 <div class="card-meta">
                     <span class="card-effort">⏱️ ${action.effort}h</span>
                     ${action.q4Alignment ? `<span>Q4: ${action.q4Alignment}%</span>` : ''}
-                    <span class="card-score">⭐ ${action.score}</span>
+                    <span class="card-score">⭐ ${action.impact}</span>
                 </div>
-                ${action.source ? `<div class="card-source">📧 ${action.source} - ${action.sourceDate || ''}</div>` : ''}
+                ${action.sourceSession ? `<div class="card-source">📧 Stack Session - ${action.sourceSession}</div>` : ''}
                 ${deadlineText ? `<div class="card-source">${deadlineText}</div>` : ''}
             `;
 
@@ -1912,7 +1707,6 @@
         }
 
         function setupEventListeners() {
-            // Set up drop zones - include section-items for empty quadrants
             document.querySelectorAll('.column-content, [data-drop-zone], .section-items').forEach(zone => {
                 zone.addEventListener('dragover', handleDragOver);
                 zone.addEventListener('drop', handleDrop);
@@ -1920,7 +1714,6 @@
                 zone.addEventListener('dragenter', handleDragEnter);
             });
 
-            // Keyboard shortcuts
             document.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.code === 'Space') {
                     e.preventDefault();
@@ -1971,7 +1764,7 @@
             }
         }
 
-        function handleDrop(e) {
+        async function handleDrop(e) {
             if (e.stopPropagation) {
                 e.stopPropagation();
             }
@@ -1982,8 +1775,6 @@
             }
 
             if (draggedElement && draggedElement !== this) {
-                // Determine source and target
-                const sourceColumn = draggedElement.closest('.column').id.replace('column-', '');
                 let targetColumn = this.dataset.column;
                 let targetZone = this.dataset.dropZone;
 
@@ -1997,9 +1788,7 @@
                 // Check capacity constraints for IN ACTION
                 if (targetColumn === 'inaction') {
                     if (!checkCapacity(draggedElement)) {
-                        if (confirm('This will exceed your 40-hour capacity. Continue anyway?')) {
-                            // Allow but warn
-                        } else {
+                        if (!confirm('This will exceed your 40-hour capacity. Continue anyway?')) {
                             return false;
                         }
                     }
@@ -2014,16 +1803,13 @@
                     }
                 }
 
-                // Move the card
+                // Move the card in UI
                 if (targetZone) {
                     this.appendChild(draggedElement);
                 } else if (this.classList.contains('section-items')) {
-                    // Moving to a TODO quadrant
                     this.appendChild(draggedElement);
                 } else if (this.classList.contains('column-content')) {
-                    // Moving to a regular column
                     if (targetColumn === 'todo') {
-                        // Find the first quadrant and add there
                         const firstQuadrant = this.querySelector('.section-items');
                         if (firstQuadrant) {
                             firstQuadrant.appendChild(draggedElement);
@@ -2037,6 +1823,13 @@
 
                 // Update the card's data
                 draggedElement.dataset.column = targetColumn;
+                
+                // Sync with backend
+                const cardId = draggedElement.dataset.id;
+                const action = JSON.parse(draggedElement.dataset.action);
+                const newQuadrant = targetZone ? targetZone.replace('todo-', '') : action.quadrant;
+                
+                await syncCardMove(cardId, targetColumn, newQuadrant);
                 
                 updateColumnCounts();
                 updateCapacityBar();
@@ -2056,7 +1849,7 @@
             let totalHours = 0;
             document.querySelectorAll('#column-inaction .action-card').forEach(card => {
                 const action = JSON.parse(card.dataset.action);
-                totalHours += action.effort;
+                totalHours += action.effort || 0;
             });
             return totalHours;
         }
@@ -2067,9 +1860,8 @@
             const fill = document.getElementById('capacityFill');
             
             fill.style.width = Math.min(percentage, 100) + '%';
-            fill.querySelector('.capacity-text').textContent = `${totalHours}/40 hrs`;
+            fill.querySelector('.capacity-text').textContent = `${totalHours.toFixed(1)}/40 hrs`;
 
-            // Update color based on capacity
             fill.className = 'capacity-fill';
             if (percentage > 90) {
                 fill.classList.add('danger');
@@ -2079,8 +1871,7 @@
                 fill.classList.add('safe');
             }
 
-            // Update header stat
-            document.getElementById('weeklyCapacity').textContent = `${totalHours}/40 hrs`;
+            document.getElementById('weeklyCapacity').textContent = `${totalHours.toFixed(1)}/40 hrs`;
         }
 
         function updateColumnCounts() {
@@ -2089,7 +1880,6 @@
                 document.getElementById(`count-${col}`).textContent = count;
             });
 
-            // Update today's focus
             const todayCount = document.querySelectorAll('[data-drop-zone="signal-today"] .action-card').length;
             document.getElementById('todayFocus').textContent = `${todayCount}/3 items`;
         }
@@ -2097,9 +1887,27 @@
         function updateStats() {
             updateColumnCounts();
             updateCapacityBar();
+            
+            // Calculate Q4 alignment
+            let totalQ4 = 0;
+            let q4Count = 0;
+            document.querySelectorAll('.action-card').forEach(card => {
+                const action = JSON.parse(card.dataset.action);
+                if (action.q4Alignment) {
+                    totalQ4 += action.q4Alignment;
+                    q4Count++;
+                }
+            });
+            const avgQ4 = q4Count > 0 ? Math.round(totalQ4 / q4Count) : 0;
+            document.getElementById('q4Alignment').textContent = `${avgQ4}%`;
+            
+            // Calculate completion rate
+            const completed = document.querySelectorAll('#column-completed .action-card').length;
+            const total = document.querySelectorAll('.action-card').length;
+            const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+            document.getElementById('completionRate').textContent = `${completionRate}%`;
         }
 
-        // Mission toggle
         function toggleMissions() {
             const content = document.getElementById('missionContent');
             const btn = document.getElementById('collapseBtn');
@@ -2113,7 +1921,6 @@
             }
         }
 
-        // Edit Modal Functions
         function openQuickCapture() {
             currentEditingCard = null;
             document.getElementById('modalTitle').textContent = '⚡ Quick Capture';
@@ -2133,22 +1940,20 @@
             document.getElementById('modalTitle').textContent = '✏️ Edit Action';
             document.getElementById('deleteBtn').style.display = 'block';
 
-            // Populate form
             document.getElementById('actionTitle').value = action.title || '';
             document.getElementById('actionDescription').value = action.description || '';
             document.getElementById('domainSelect').value = action.domain || 'Business';
             document.getElementById('quadrantSelect').value = action.quadrant || 'uni';
             document.getElementById('effortHours').value = action.effort || '';
-            document.getElementById('impactScore').value = action.score || '';
+            document.getElementById('impactScore').value = action.impact || '';
             document.getElementById('q4Score').value = action.q4Alignment || '';
-            document.getElementById('deadline').value = action.deadline || '';
-            document.getElementById('sourceSession').value = action.sourceDate ? `${action.source} - ${action.sourceDate}` : '';
-            document.getElementById('revelation').value = action.revelation || '';
+            document.getElementById('deadline').value = action.deadline ? action.deadline.split('T')[0] : '';
+            document.getElementById('sourceSession').value = action.sourceSession || '';
+            document.getElementById('revelation').value = '';
 
-            // Set tags
             document.querySelectorAll('.tag-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if (action.badges && action.badges.includes(btn.textContent)) {
+                if (action.tags && action.tags.includes(btn.textContent)) {
                     btn.classList.add('active');
                 }
             });
@@ -2180,200 +1985,67 @@
             btn.classList.toggle('active');
         }
 
-        function saveAction() {
+        async function saveAction() {
             const title = document.getElementById('actionTitle').value.trim();
             if (!title) {
                 showNotification('Please enter an action title!', 'error');
                 return;
             }
 
-            const badges = [];
-            document.querySelectorAll('.tag-btn.active').forEach(btn => {
-                badges.push(btn.textContent);
-            });
-
-            const q4Score = parseFloat(document.getElementById('q4Score').value);
-            if (q4Score >= 80 && !badges.includes('Q4')) {
-                badges.push('Q4');
-            }
-
-            const actionData = {
-                id: currentEditingCard ? JSON.parse(currentEditingCard.dataset.action).id : ++actionIdCounter,
-                title: title,
-                description: document.getElementById('actionDescription').value,
-                domain: document.getElementById('domainSelect').value,
-                quadrant: document.getElementById('quadrantSelect').value,
-                effort: parseFloat(document.getElementById('effortHours').value) || 2,
-                score: parseInt(document.getElementById('impactScore').value) || 50,
-                q4Alignment: q4Score || null,
-                deadline: document.getElementById('deadline').value || null,
-                source: document.getElementById('sourceSession').value ? 'Stack Session' : null,
-                sourceDate: document.getElementById('sourceSession').value.split(' - ')[1] || null,
-                revelation: document.getElementById('revelation').value || null,
-                badges: badges
-            };
-
             if (currentEditingCard) {
-                // Update existing card
-                const currentColumn = currentEditingCard.dataset.column;
-                currentEditingCard.remove();
-                addActionCard(actionData, currentColumn, 
-                    currentColumn === 'todo' ? actionData.quadrant : null);
-                showNotification('Action updated successfully!');
-            } else {
-                // Add new card to TODO
-                boardData.todo.push(actionData);
-                addActionCard(actionData, 'todo', actionData.quadrant);
-                showNotification('Action captured successfully!');
-            }
-
-            closeEditModal();
-            updateColumnCounts();
-            updateCapacityBar();
-        }
-
-        function deleteCurrentAction() {
-            if (currentEditingCard && confirm('Delete this action permanently?')) {
-                currentEditingCard.remove();
+                // For now, just update the UI
+                // In production, you'd call the update API endpoint
+                showNotification('Update functionality coming soon!', 'error');
                 closeEditModal();
-                updateColumnCounts();
-                updateCapacityBar();
-                showNotification('Action deleted!');
+            } else {
+                // Save new card
+                await saveQuickCapture();
             }
         }
 
-        function quickDelete(id) {
-            if (confirm('Delete this action?')) {
-                const card = document.querySelector(`[data-id="${id}"]`);
-                if (card) {
-                    card.remove();
+        async function deleteCurrentAction() {
+            if (currentEditingCard && confirm('Delete this action permanently?')) {
+                const cardId = currentEditingCard.dataset.id;
+                const success = await deleteCard(cardId);
+                
+                if (success) {
+                    currentEditingCard.remove();
+                    closeEditModal();
                     updateColumnCounts();
                     updateCapacityBar();
                     showNotification('Action deleted!');
+                } else {
+                    showNotification('Failed to delete action', 'error');
+                }
+            }
+        }
+
+        async function quickDelete(id) {
+            if (confirm('Delete this action?')) {
+                const card = document.querySelector(`[data-id="${id}"]`);
+                if (card) {
+                    const success = await deleteCard(id);
+                    
+                    if (success) {
+                        card.remove();
+                        updateColumnCounts();
+                        updateCapacityBar();
+                        showNotification('Action deleted!');
+                    } else {
+                        showNotification('Failed to delete action', 'error');
+                    }
                 }
             }
         }
 
         async function extractFromStack() {
-            if (CONFIG.DEMO_MODE) {
-                // Demo mode simulation
-                showNotification('Extracting actions from Stack Sessions...');
-                setTimeout(() => {
-                    showNotification('3 new actions extracted from Stack Sessions!');
-                    document.getElementById('stackCount').textContent = '0 unprocessed';
-                    
-                    // Add some demo cards
-                    const demoCard = {
-                        id: Date.now(),
-                        title: 'Demo action from Stack Session',
-                        domain: 'Business',
-                        effort: 2,
-                        score: 75,
-                        quadrant: 'uni',
-                        badges: ['Stack Session'],
-                        source: 'Stack Session',
-                        sourceDate: new Date().toISOString().split('T')[0]
-                    };
-                    addActionCard(demoCard, 'todo', demoCard.quadrant);
-                    updateColumnCounts();
-                }, 2000);
-                return;
-            }
-            
-            // Production mode
-            showNotification('Checking for new Stack Sessions...');
-            
-            try {
-                const response = await fetch(`${CONFIG.API_ENDPOINT}/stack/check-new`, {
-                    headers: getAuthHeaders()
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data.unprocessedSessions && data.unprocessedSessions.length > 0) {
-                        for (const session of data.unprocessedSessions) {
-                            const extractResponse = await fetch(`${CONFIG.API_ENDPOINT}/stack/extract`, {
-                                method: 'POST',
-                                headers: getAuthHeaders(),
-                                body: JSON.stringify({ sessionId: session.id })
-                            });
-                            
-                            if (extractResponse.ok) {
-                                const cards = await extractResponse.json();
-                                cards.forEach(card => addActionCard(card, 'todo', card.quadrant));
-                            }
-                        }
-                        
-                        showNotification(`${data.cardsCreated} actions extracted from ${data.unprocessedSessions.length} sessions!`);
-                        document.getElementById('stackCount').textContent = '0 unprocessed';
-                    } else {
-                        showNotification('No new Stack Sessions to process');
-                    }
-                }
-            } catch (error) {
-                showNotification('Could not connect to Stack Session processor', 'error');
-            }
+            showNotification('Stack extraction feature coming soon!');
+            // This will be implemented when you have the Stack Session extraction workflow
         }
 
         async function performWeeklyTriage() {
-            if (!confirm('Start weekly triage? This will reorganize your cards based on capacity and priority.')) {
-                return;
-            }
-            
-            showNotification('Running weekly triage...');
-            
-            if (CONFIG.DEMO_MODE) {
-                // Demo mode simulation
-                setTimeout(() => {
-                    showNotification('Triage complete! Cards have been reorganized.');
-                    updateStats();
-                }, 2000);
-                return;
-            }
-            
-            // Production mode
-            try {
-                const response = await fetch(`${CONFIG.API_ENDPOINT}/triage/weekly`, {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify({
-                        currentCapacity: getCurrentCapacity(),
-                        maxCapacity: 40,
-                        currentWeek: new Date().toISOString()
-                    })
-                });
-                
-                if (response.ok) {
-                    const triageResult = await response.json();
-                    
-                    // Clear and reload board
-                    clearBoard();
-                    
-                    // Add cards in new positions
-                    triageResult.todo?.forEach(card => addActionCard(card, 'todo', card.quadrant));
-                    triageResult.inAction?.forEach(card => addActionCard(card, 'inaction'));
-                    triageResult.signal?.forEach(card => addActionCard(card, 'signal', card.signalSection));
-                    triageResult.noise?.forEach(card => addActionCard(card, 'noise'));
-                    
-                    showNotification(`Triage complete! ${triageResult.moved} cards reorganized.`);
-                    updateStats();
-                }
-            } catch (error) {
-                showNotification('Could not complete triage', 'error');
-            }
-        }
-
-        function clearBoard() {
-            // Clear all cards from columns
-            document.querySelectorAll('.action-card').forEach(card => card.remove());
-            boardData = {
-                todo: [],
-                inaction: [],
-                signal: [],
-                noise: [],
-                completed: []
-            };
+            showNotification('Weekly triage feature coming soon!');
+            // This will be implemented when you have the triage workflow
         }
 
         function toggleStats() {

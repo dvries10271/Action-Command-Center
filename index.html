@@ -1275,8 +1275,9 @@
             
             // Initialize the board
             initBoard();
-            loadBoardData();
-            updateStats();
+            
+            // Load user cards from API
+            loadUserCards();
             
             // Fetch missions data
             fetchMissions();
@@ -1352,27 +1353,26 @@
 
             let missionsHTML = '';
             
-            // Add quarter info header if available
-            if (data.quarter || data.daysRemaining !== undefined) {
-                missionsHTML = `
-                    <div class="mission-quarter-info">
-                        <span class="quarter-label">
-                            ${data.quarter || 'Current Quarter'}
-                        </span>
-                        ${data.daysRemaining !== undefined ? `
-                            <span class="days-remaining ${data.daysRemaining < 30 ? 'urgent' : ''}">
-                                ${data.daysRemaining} days remaining
-                            </span>
-                        ` : ''}
-                    </div>
-                `;
-            }
-            
-            // Process each domain
+            // Process each domain - don't create a separate card for quarter info
             if (data.domains) {
                 Object.entries(data.domains).forEach(([key, domain]) => {
+                    // Add quarter info to the first domain card if available
+                    let headerInfo = '';
+                    if (key === Object.keys(data.domains)[0] && (data.quarter || data.daysRemaining !== undefined)) {
+                        headerInfo = `
+                            <div style="position: absolute; top: 0.5rem; right: 0.5rem; 
+                                        font-size: 0.7rem; color: var(--text-secondary);">
+                                ${data.quarter || 'Current Quarter'} • 
+                                <span style="color: ${data.daysRemaining < 30 ? 'var(--warning-yellow)' : 'inherit'};">
+                                    ${data.daysRemaining} days left
+                                </span>
+                            </div>
+                        `;
+                    }
+                    
                     missionsHTML += `
-                        <div class="mission-card">
+                        <div class="mission-card" style="position: relative;">
+                            ${headerInfo}
                             <h3>${domain.icon} ${domain.name}</h3>
                             ${domain.missions && domain.missions.length > 0 ? 
                                 domain.missions.map(mission => `
@@ -1530,43 +1530,48 @@
         }
 
         function loadBoardData() {
-            // Load from localStorage or initialize with demo data
+            // Try to load from localStorage first
             const savedData = localStorage.getItem('boardData');
             if (savedData) {
                 boardData = JSON.parse(savedData);
+                renderBoard();
             } else {
-                // Initialize with some demo data
-                boardData = {
-                    todo: [
-                        {
-                            id: 'demo-1',
-                            title: 'Review Q4 Strategy',
-                            description: 'Analyze current progress and adjust tactics',
-                            domain: 'Business',
-                            quadrant: 'nui',
-                            effort: 2,
-                            impact: 5,
-                            q4Alignment: 100,
-                            tags: ['Q4 Goal', 'Important']
-                        },
-                        {
-                            id: 'demo-2',
-                            title: 'Team Meeting Prep',
-                            description: 'Prepare agenda for Monday standup',
-                            domain: 'Business',
-                            quadrant: 'uni',
-                            effort: 1,
-                            impact: 3,
-                            q4Alignment: 60,
-                            tags: ['Urgent']
-                        }
-                    ],
-                    inaction: [],
-                    signal: [],
-                    noise: [],
-                    completed: []
-                };
+                loadSampleData();
             }
+        }
+
+        function loadSampleData() {
+            // Initialize with some demo data if no saved data
+            boardData = {
+                todo: [
+                    {
+                        id: 'demo-1',
+                        title: 'Review Q4 Strategy',
+                        description: 'Analyze current progress and adjust tactics',
+                        domain: 'Business',
+                        quadrant: 'nui',
+                        effort: 2,
+                        impact: 5,
+                        q4Alignment: 100,
+                        tags: ['Q4 Goal', 'Important']
+                    },
+                    {
+                        id: 'demo-2',
+                        title: 'Team Meeting Prep',
+                        description: 'Prepare agenda for Monday standup',
+                        domain: 'Business',
+                        quadrant: 'uni',
+                        effort: 1,
+                        impact: 3,
+                        q4Alignment: 60,
+                        tags: ['Urgent']
+                    }
+                ],
+                inaction: [],
+                signal: [],
+                noise: [],
+                completed: []
+            };
             renderBoard();
         }
 

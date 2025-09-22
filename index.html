@@ -1023,6 +1023,10 @@
                     ➕
                     <span class="tooltip">Quick Capture (Ctrl+Space)</span>
                 </button>
+                <button class="icon-btn" onclick="refreshData()" title="Refresh Data">
+        🔄
+        <span class="tooltip">Refresh Data</span>
+    </button>
                 <button class="icon-btn warning" onclick="extractFromStack()" title="Extract from Stack">
                     📧
                     <span class="tooltip">Extract from Stack</span>
@@ -1717,7 +1721,6 @@ function updateMissionStats(data) {
 
             // NEW: Fetch missions initially + every 5 minutes
             fetchMissions();
-            setInterval(fetchMissions, 5 * 60 * 1000);
         }
 
         function getSelectedTags() {
@@ -2259,6 +2262,22 @@ function updateMissionStats(data) {
             // Placeholder for Stack Session extraction
             showNotification('Stack Session extraction coming soon!', 'info');
         }
+
+        function refreshData() {
+    // Show loading notification
+    showNotification('Refreshing data...', 'info');
+    
+    // Reload both cards and missions
+    Promise.all([
+        loadUserCards(),
+        fetchMissions()
+    ]).then(() => {
+        showNotification('Data refreshed successfully!', 'success');
+    }).catch(error => {
+        console.error('Error refreshing data:', error);
+        showNotification('Failed to refresh some data', 'error');
+    });
+}
 
         function performWeeklyTriage() {
             // Placeholder for Weekly Triage

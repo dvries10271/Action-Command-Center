@@ -967,6 +967,18 @@
                 padding: 1.5rem 1rem;
             }
 
+            /* NEW styles for the quarter banner */
+.quarter-info{
+    margin-left:auto;            /* push it to the far right */
+    font-weight:600;
+    color:var(--accent-blue);
+}
+.quarter-info .days{
+    margin-left:.5rem;
+    font-weight:400;
+    color:var(--warning-yellow);
+}
+
             @media (max-width: 768px) {
                 .icon-btn {
                     width: 36px;
@@ -1079,23 +1091,29 @@
     </div>
 
     <!-- Mission Cards Section -->
-    <section class="mission-section">
-        <div class="mission-header" onclick="toggleMissions()">
-            <h2>🎯 90-Day Sprint Missions</h2>
-            <!-- Added refresh + collapse container (keeps structure intact) -->
-            <div style="display: flex; gap: 1rem; align-items: center;">
-                <button onclick="fetchMissions(); event.stopPropagation();" 
-                        style="background: none; border: none; color: var(--accent-blue); cursor: pointer;"
-                        title="Refresh missions">
-                    🔄
-                </button>
-                <button class="collapse-btn" id="collapseBtn">⌃</button>
-            </div>
-        </div>
-        <div class="mission-content" id="missionContent">
-            <!-- Mission cards will be populated by JavaScript -->
-        </div>
-    </section>
+<section class="mission-section">
+  <div class="mission-header" onclick="toggleMissions()">
+      <h2>🎯 90-Day Sprint Missions</h2>
+
+      <!-- NEW ▸ Quarter + countdown lives here -->
+      <span id="quarterInfo" class="quarter-info"></span>
+
+      <!-- Refresh + collapse buttons (unchanged) -->
+      <div style="display:flex; gap:1rem; align-items:center;">
+          <button onclick="fetchMissions(); event.stopPropagation();"
+                  style="background:none; border:none; color:var(--accent-blue); cursor:pointer;"
+                  title="Refresh missions">
+              🔄
+          </button>
+          <button class="collapse-btn" id="collapseBtn">⌃</button>
+      </div>
+  </div>
+
+  <div class="mission-content" id="missionContent">
+      <!-- Mission cards will be populated by JavaScript -->
+  </div>
+</section>
+
 
     <!-- Main Board -->
     <div class="board-container">
@@ -1518,119 +1536,126 @@
         }
 
         // ---------- NEW: Missions Fetch + Render ----------
-        // Fetch missions from n8n and update the UI
-        async function fetchMissions() {
-            try {
-                const missionContent = document.getElementById('missionContent');
-                if (missionContent) {
-                    missionContent.innerHTML = '<div class="loading">Loading missions...</div>';
-                }
 
-                // Use existing token (localStorage first; fallback to sessionStorage)
-                const token = localStorage.getItem(CONFIG.TOKEN_KEY) || sessionStorage.getItem(CONFIG.TOKEN_KEY);
-                if (!token) {
-                    console.error('No auth token found');
-                    return;
-                }
-
-                const response = await fetch(`${CONFIG.API_ENDPOINT}/cards/missions`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({})
-                });
-
-                if (!response.ok) throw new Error('Failed to fetch missions');
-
-                const result = await response.json();
-                if (result.success && result.data) {
-                    displayMissions(result.data);
-                    updateMissionStats(result.data);
-                } else {
-                    throw new Error('Invalid missions payload');
-                }
-            } catch (error) {
-                console.error('Error fetching missions:', error);
-                showNotification('Failed to load missions', 'error');
-            }
+// Fetch missions from n8n and update the UI
+async function fetchMissions() {
+    try {
+        const missionContent = document.getElementById('missionContent');
+        if (missionContent) {
+            missionContent.innerHTML = '<div class="loading">Loading missions...</div>';
         }
 
-        // Render missions to the missionContent area
-        function displayMissions(data) {
-            const missionContent = document.getElementById('missionContent');
-            if (!missionContent) return;
+        // Use existing token (localStorage first; fallback to sessionStorage)
+        const token = localStorage.getItem(CONFIG.TOKEN_KEY) || sessionStorage.getItem(CONFIG.TOKEN_KEY);
+        if (!token) {
+            console.error('No auth token found');
+            return;
+        }
 
-            let missionsHTML = '';
-            
-            // Domains: expected shape: data.domains = { body: {...}, being: {...}, balance: {...}, business: {...} }
-            if (data.domains && typeof data.domains === 'object') {
-                Object.entries(data.domains).forEach(([key, domain]) => {
-                    missionsHTML += `
-                        <div class="mission-card">
-                            <h3>${domain.icon || ''} ${domain.name || key}</h3>
-                            ${(domain.missions || []).map(mission => `
-                                <div class="mission-item">
-                                    <span class="mission-status ${(domain.onTrack ? 'status-progress' : 'status-not-started')}">
-                                        ${domain.onTrack ? '→' : '○'}
-                                    </span>
-                                    <span>${mission}</span>
-                                </div>
-                            `).join('')}
-                            ${domain.primaryMetric ? `
-                                <div class="mission-metric">
-                                    <strong>${domain.primaryMetric}:</strong> 
-                                    ${domain.currentValue ?? ''} / ${domain.targetValue ?? ''}
-                                    <div style="margin-top: 0.25rem;">
-                                        <div style="background: #333; height: 4px; border-radius: 2px; overflow: hidden;">
-                                            <div style="
-                                                background: ${domain.onTrack ? 'var(--success-green)' : 'var(--warning-yellow)'}; 
-                                                width: ${Math.max(0, Math.min(100, Number(domain.progress) || 0))}%;
-                                                height: 100%; transition: width 0.3s;">
-                                            </div>
-                                        </div>
+        const response = await fetch(`${CONFIG.API_ENDPOINT}/cards/missions`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch missions');
+
+        const result = await response.json();
+        if (result.success && result.data) {
+            displayMissions(result.data);
+            updateMissionStats(result.data);
+        } else {
+            throw new Error('Invalid missions payload');
+        }
+    } catch (error) {
+        console.error('Error fetching missions:', error);
+        showNotification('Failed to load missions', 'error');
+    }
+}
+
+/* --- helper: days remaining in a quarter --- */
+function daysToQuarterEnd(qString) {
+    // Accepts "Q4 2025", "Q1-2026", etc.
+    const [q, yr] = qString.replace('-', ' ').trim().split(/\s+/);
+    const year = yr || new Date().getFullYear();           // fallback = current year
+    const endMonth = { Q1: 2, Q2: 5, Q3: 8, Q4: 11 }[q];   // 0-based month index
+    if (endMonth === undefined) return 0;                  // invalid label → 0 days
+    const quarterEnd = new Date(Date.UTC(year, endMonth + 1, 0));  // last day UTC
+    const today = new Date(); today.setUTCHours(0, 0, 0, 0);
+    return Math.max(0, Math.ceil((quarterEnd - today) / 864e5));   // 86 400 000 ms/day
+}
+
+// Render missions to the missionContent area
+function displayMissions(data) {
+    const missionContent = document.getElementById('missionContent');
+    if (!missionContent) return;
+
+    /* --- quarter banner --- */
+    const qBanner = document.getElementById('quarterInfo');
+    if (qBanner) {
+        const quarterLabel = data.quarter || 'Current Quarter';
+        const daysLeft = (typeof data.daysRemaining === 'number')
+            ? data.daysRemaining
+            : daysToQuarterEnd(quarterLabel);
+
+        qBanner.innerHTML =
+            `${quarterLabel} <span class="days">${daysLeft} days left</span>`;
+    }
+
+    /* --- mission cards --- */
+    let missionsHTML = '';
+    if (data.domains && typeof data.domains === 'object') {
+        Object.entries(data.domains).forEach(([key, domain]) => {
+            missionsHTML += `
+                <div class="mission-card">
+                    <h3>${domain.icon || ''} ${domain.name || key}</h3>
+                    ${(domain.missions || []).map(mission => `
+                        <div class="mission-item">
+                            <span class="mission-status ${(domain.onTrack ? 'status-progress' : 'status-not-started')}">
+                                ${domain.onTrack ? '→' : '○'}
+                            </span>
+                            <span>${mission}</span>
+                        </div>
+                    `).join('')}
+                    ${domain.primaryMetric ? `
+                        <div class="mission-metric">
+                            <strong>${domain.primaryMetric}:</strong>
+                            ${domain.currentValue ?? ''} / ${domain.targetValue ?? ''}
+                            <div style="margin-top:.25rem;">
+                                <div style="background:#333;height:4px;border-radius:2px;overflow:hidden;">
+                                    <div style="
+                                        background:${domain.onTrack ? 'var(--success-green)' : 'var(--warning-yellow)'};
+                                        width:${Math.max(0, Math.min(100, Number(domain.progress) || 0))}%;
+                                        height:100%;">
                                     </div>
                                 </div>
-                            ` : ''}
+                            </div>
                         </div>
-                    `;
-                });
-            }
+                    ` : ''}
+                </div>
+            `;
+        });
+    }
 
-            // Quarter header & days remaining
-            if (data.quarter || data.daysRemaining !== undefined) {
-                missionsHTML = `
-                    <div style="width: 100%; padding: 0.5rem 0; margin-bottom: 1rem; 
-                                border-bottom: 1px solid var(--border-color); 
-                                display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: bold; color: var(--accent-blue);">
-                            ${data.quarter || 'Current Quarter'}
-                        </span>
-                        ${data.daysRemaining !== undefined ? `
-                            <span style="color: ${(Number(data.daysRemaining) < 30) ? 'var(--warning-yellow)' : 'var(--text-secondary)'};">
-                                ${data.daysRemaining} days remaining
-                            </span>
-                        ` : ''}
-                    </div>
-                ` + missionsHTML;
-            }
+    missionContent.innerHTML = missionsHTML || '<div class="loading">No missions found.</div>';
+}
 
-            missionContent.innerHTML = missionsHTML || '<div class="loading">No missions found.</div>';
-        }
+// Update top stats using missions summary
+function updateMissionStats(data) {
+    if (data.summary && data.summary.overallProgress !== undefined) {
+        const q4Element = document.getElementById('q4Alignment');
+        if (q4Element) q4Element.textContent = `${data.summary.overallProgress}%`;
+    }
+    if (data.summary && data.summary.domainsOnTrack !== undefined) {
+        console.log(`Domains on track: ${data.summary.domainsOnTrack}/4`);
+    }
+}
 
-        // Update top stats using missions summary
-        function updateMissionStats(data) {
-            if (data.summary && data.summary.overallProgress !== undefined) {
-                const q4Element = document.getElementById('q4Alignment');
-                if (q4Element) q4Element.textContent = `${data.summary.overallProgress}%`;
-            }
-            if (data.summary && data.summary.domainsOnTrack !== undefined) {
-                // Hook for future stat widget if desired
-                console.log(`Domains on track: ${data.summary.domainsOnTrack}/4`);
-            }
-        }
-        // ---------- END NEW: Missions ----------
+// ---------- END NEW: Missions ----------
+
 
         // Initialize app after login
         function initializeApp() {

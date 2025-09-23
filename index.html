@@ -1513,6 +1513,93 @@
             }
         }
 
+        // Save Action Function
+        async function saveAction() {
+    const title = document.getElementById('actionTitle').value.trim();
+    if (!title) {
+        showNotification('Title is required!', 'error');
+        return;
+    }
+
+    const cardData = {
+        title: title,
+        description: document.getElementById('actionDescription').value,
+        domain: document.getElementById('domainSelect').value,
+        quadrant: document.getElementById('quadrantSelect').value,
+        effort: parseFloat(document.getElementById('effortHours').value) || 1,
+        impact: parseInt(document.getElementById('impactScore').value) || 5,
+        q4Alignment: parseInt(document.getElementById('q4Score').value) || 50,
+        deadline: document.getElementById('deadline').value || null,
+        sourceSession: document.getElementById('sourceSession').value || '',
+        tags: getSelectedTags()
+    };
+
+    try {
+        if (currentEditingCard) {
+            // Update existing card
+            const oldAction = JSON.parse(currentEditingCard.dataset.action);
+            cardData.id = oldAction.id;
+            
+            const response = await fetch(`${CONFIG.API_ENDPOINT}/cards/update`, {
+                method: 'POST',
+                headers: {
+                    ...getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(cardData)
+            });
+            
+            if (!response.ok) throw new Error('Failed to update card');
+            
+            // Update the card in the UI
+            currentEditingCard.remove();
+            addActionCard({...oldAction, ...cardData}, currentEditingCard.dataset.column, oldAction.quadrant);
+            showNotification('Action updated successfully!');
+        } else {
+            // Create new card
+            const response = await fetch(`${CONFIG.API_ENDPOINT}/cards/add`, {
+                method: 'POST',
+                headers: {
+                    ...getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(cardData)
+            });
+            
+            if (!response.ok) throw new Error('Failed to save card');
+            
+            const result = await response.json();
+            if (result.success) {
+                addActionCard(result.card, 'todo', result.card.quadrant || 'ui');
+                showNotification('Card added successfully!');
+            }
+        }
+        
+        closeEditModal();
+        updateStats();
+    } catch (error) {
+        console.error('Error saving card:', error);
+        showNotification('Failed to save card', 'error');
+    }
+}
+        
+        //Quick Delet Function
+        async function quickDelete(id) {
+    if (!confirm('Delete this action?')) return;
+    
+    const card = document.querySelector(`[data-id="${id}"]`);
+    if (!card) return;
+    
+    const success = await deleteCard(id);
+    if (success) {
+        card.remove();
+        updateStats();
+        showNotification('Action deleted!');
+    } else {
+        showNotification('Failed to delete action', 'error');
+    }
+} 
+        
         // Clearform Function
         function clearForm() {
     document.getElementById('actionTitle').value = '';

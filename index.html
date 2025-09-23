@@ -1513,7 +1513,26 @@
             }
         }
 
-        // ---------- NEW: Missions Fetch + Render ----------
+        // Clearform Function
+        function clearForm() {
+    document.getElementById('actionTitle').value = '';
+    document.getElementById('actionDescription').value = '';
+    document.getElementById('domainSelect').value = 'Business';
+    document.getElementById('quadrantSelect').value = 'ui';
+    document.getElementById('effortHours').value = '';
+    document.getElementById('impactScore').value = '';
+    document.getElementById('q4Score').value = '';
+    document.getElementById('deadline').value = '';
+    document.getElementById('sourceSession').value = '';
+    document.getElementById('revelation').value = '';
+    
+    // Clear all tag selections
+    document.querySelectorAll('.tag-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+}
+
+// ---------- NEW: Missions Fetch + Render ----------
 
 // Fetch missions from n8n and update the UI
 async function fetchMissions() {

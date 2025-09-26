@@ -1921,7 +1921,10 @@ async function fetchMissions() {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({})
+            body: JSON.stringify({
+                email: currentUser.email,  // Send the logged-in user's email
+                userId: currentUser.id || currentUser.email
+            })
         });
 
         if (!response.ok) throw new Error('Failed to fetch missions');
